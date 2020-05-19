@@ -10,3 +10,4 @@ jupyter labextension install @jupyterlab/toc - wait some minutes
 jupyter nbextension enable @jupyterlab/toc
 
 
+#berichteTabelle > tbody > tr:nth-child(1) > td:nth-child(2) > a

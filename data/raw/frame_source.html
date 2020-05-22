@@ -1,27 +1,511 @@
-"""
-Step 1- manually download alphabetic listing of all companies
-Step 2- parse alphabetic listing to extract:  company id and year from alphabetic listing - at this time save desired features of the company profile such as
-ziel_OLD, etc....
-3-
-"""
 
-import glob
-import re
-import time
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8" />
+
+    <title>DNK Company List</title>
+
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <link href="/Content/DNKStyle.min.css" rel="stylesheet"/>
+
+    <link href="/Content/themes/base/resizable.css" rel="stylesheet"/>
+<link href="/Content/themes/base/datepicker.css" rel="stylesheet"/>
+<link href="/Scripts/_Plugins/timePicker/src/clockpicker.css" rel="stylesheet"/>
+
+    <script src="/Scripts/_Standard/modernizr-2.8.3.js"></script>
 
 
-import requests
-from bs4 import BeautifulSoup
 
-from random import randint
-from time import sleep
-import  constants as const
 
-#matcher_id_year = re.compile(r"class=\"small_tiles_in\"\s+href=\"https://datenbank2\.deutscher-nachhaltigkeitskodex\.de/Profile/CompanyProfile/(\d+)/de/(\d+)/dnk\"\s+target", re.MULTILINE)
+    <link href="/BotDetectCaptcha.ashx?get=layoutStyleSheet" rel="stylesheet" type="text/css" />
 
-mathcher_name_id = re.compile(r"<h3 class='companyLink even' data-id='(\d+)' data-date='(.*)'><span class='cEditName'>(.*)<\/span>(.*)\s*<span\s+id='arrow_(\d+'\s+class='arrow'><\/span><\/h3>)", re.MULTILINE)
 
-frame_source = """
+
+    <link rel="stylesheet" type="text/css" href="/Scripts/_Plugins/datatables/datatables.min.css" />
+
+
+</head>
+
+
+
+
+    <body>
+
+
+
+
+
+
+
+
+    <div id="main" style="width:100%;">
+
+        <section class="headElements">
+            <section id="login">
+
+
+
+<a href="/Account/Register?returnUrl=%2FHome%2FIndex%2Fde" id="registerLink">Registrieren</a>        |
+        <span id="quickLoginLink" onclick="showQuickLogin()">Anmelden</span>
+
+
+
+<div id="quickLogin">
+    <div class="loginTable">
+        <table>
+
+            <tr><td colspan="2"><p>Bitte loggen Sie sich mit Ihrem Usernamen und Ihrem Passwort ein:</p></td></tr>
+
+            <tr><td>Username: </td><td><input id="quickName" type="text" /></td></tr>
+            <tr><td>Password: </td><td><input id="quickPass" type="password" onkeypress="uniCharCode(event)" /></td></tr>
+
+            <tr><td colspan="2"><p class="small">Sie haben Ihr Passwort vergessen? Klicken Sie <strong><a href="/Account/AccountLost">hier</a></strong> um ein neues Passwort zu vergeben.</p></td></tr>
+
+            <tr><td></td><td><span onclick="quickLogin()" id="quickLoginButton">Login</span><span onclick="hideQuickLogin()" id="closeLoginButton">Close</span></tr>
+        </table>
+    </div>
+
+    <div class="pleaseWait">
+        <span class="loginWaitText">
+
+            <span class="waitText">
+                Bitte warten Sie. <br />Sie werden sofort eingeloggt.
+            </span>
+            <img src="/Images/loading51.gif" />
+
+        </span>
+    </div>
+</div>
+
+
+
+<style type="text/css">
+
+
+    span#quickLoginLink {
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    div.pleaseWait{
+        display: none;
+    }
+
+    span.loginWaitText {
+        text-align: center;
+        display: block;
+    }
+
+    span.waitText {
+        font-size: 20px;
+        margin-top: 80px;
+        display: block;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 10px;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+    div#quickLogin {
+        font-family: Arial;
+        position: absolute;
+        top: 25px;
+        left: 55%;
+        display: none;
+        transform: scale(0);
+        opacity: 0;
+        width: 360px;
+        height: 235px;
+        padding: 10px;
+        border: 2px solid #333;
+        border-radius: 5px;
+        background-color: #fff;
+        font-size: 14px;
+        box-shadow: 1px 1px 1px;
+        z-index: 10000;
+        -webkit-transition: all 0.5s ease-in-out;
+        -moz-transition: all 0.5s ease-in-out;
+        -o-transition: all 0.5s ease-in-out;
+        -ms-transition: all 0.5s ease-in-out;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+    }
+
+        div#quickLogin table tr td:first-child {
+            width: 35%;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        div#quickLogin table tr td p {
+            font-weight: normal;
+        }
+
+            div#quickLogin table tr td p.small {
+                font-weight: normal;
+                font-size: 12px;
+            }
+
+        div#quickLogin table tr td input {
+            border: 1px solid #aaa;
+            border-radius: 10px;
+            padding-left: 5px;
+            width: 97%;
+            float: left;
+        }
+
+        div#quickLogin table tr td span#quickLoginButton,
+        div#quickLogin table tr td span#closeLoginButton {
+            background-color: #617179;
+            color: #fff;
+            padding: 5px 10px;
+            position: relative;
+            border-radius: 3px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+</style>
+
+<script type="text/javascript">
+
+    function uniCharCode(event) {
+        var char = event.which || event.keyCode;
+
+        if (char == 13) {
+            quickLogin();
+            return false;
+        }
+    }
+
+    function showQuickLogin() {
+
+        $("div#quickLogin").css("display", "block");
+        setTimeout(function () {
+            $("div#quickLogin").css("opacity", 1);
+            $("div#quickLogin").css("transform", "scale(1)");
+        }, 100);
+
+    }
+
+    function hideQuickLogin() {
+
+        $("div#quickLogin").css("opacity", 0);
+        $("div#quickLogin").css("transform", "scale(0)");
+        setTimeout(function () {
+            $("div#quickLogin").css("display", "none");
+        }, 600);
+    }
+
+    function quickLogin() {
+        var qName = $("input#quickName").val();
+        var qPass = $("input#quickPass").val();
+
+        if (qName != "" && qPass != "") {
+
+            $("div.loginTable").css("display", "none");
+            $("div.pleaseWait").css("display", "block");
+
+            $.ajax({
+                url: '/Account/FastLogin',
+                cache: false,
+                dataType: 'json',
+                data: { qName: qName, qPass: qPass },
+                traditional: true,
+                success: function (data) {
+
+
+
+                    if (data == "successfull") {
+                        //window.location.reload();
+                        window.location = "/Home";
+
+                        //$("div#quickLogin").css("display", "none");
+                        //$("div#quickLogin").css("opacity", 0);
+
+                        //$("div.loginTable").css("display", "block");
+                        //$("div.pleaseWait").css("display", "none");
+
+                    } else {
+                        alert(data);
+                        $("div.loginTable").css("display", "block");
+                        $("div.pleaseWait").css("display", "none");
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert("ERROR [_LoginPartial.cshtml]: " + "\n\n> quickLogin() <\n\n" + xhr.status + ": " + thrownError);
+                }
+            });
+
+        }
+    }
+
+</script>
+
+            </section>
+        </section>
+
+
+
+
+
+        <span style="display:none" class="hidden" id="serverPath">https://datenbank2.deutscher-nachhaltigkeitskodex.de</span>
+        <span style="display:none" class="hidden" id="siteLanguage">de</span>
+
+        <h3 class='filterOptions animated' id="linkBtn_showFilter">Filteroptionen anzeigen <span id='arrow_filter' class='arrow'></span></h3>
+
+
+
+<div id="ListenAnsicht" class="filterOptions">
+
+    <div id="innerFilter">
+
+
+
+        <span class="filterTitles">Anzahl Mitarbeiter</span>
+        <select class="drpDwnFilter" id="drpSize">
+            <option value="-1">Alle</option>
+                    <option value="1">&lt; 250</option>
+                    <option value="2">250 - 499</option>
+                    <option value="3">500 - 4.999</option>
+                    <option value="4">5.000 - 50.000</option>
+                    <option value="5">&gt; 50.000</option>
+
+        </select>
+
+        <br />
+
+        <span class="filterTitles">Firmensitz</span>
+        <select class="drpDwnFilter" id="drpCountries">
+            <option value="-1">Alle</option>
+                    <option value="1">Amerika</option>
+                    <option value="8">Deutschland</option>
+                    <option value="11">Finnland</option>
+                    <option value="17">Italien</option>
+                    <option value="181">Luxemburg</option>
+                    <option value="27">&#214;sterreich</option>
+                    <option value="30">Schweden</option>
+                    <option value="185">Tschechische Republik</option>
+
+        </select>
+
+
+        <br />
+
+        <div style="display:none;">
+
+            <span class="filterTitles">Art der Erkl&#228;rung</span>
+            <select class="drpDwnFilter" id="drpShortDeclaration">
+                <option value="-1">Alle</option>
+                <option value="0">Vollerkl&#228;rung</option>
+                <option value="1">Kurzerkl&#228;rung</option>
+            </select>
+            <br />
+        </div>
+        <span class="filterTitles">Branche</span>
+        <select class="drpDwnFilter" id="drpSector">
+            <option value="-1">Alle</option>
+                        <option value="41"> </option>
+                        <option value="20">Automobilindustrie</option>
+                        <option value="1">Banken, Versicherungen, Finanzdienstleister</option>
+                        <option value="2">Bauwirtschaft/-gewerbe</option>
+                        <option value="35">Beratungsindustrie und Agenturdienstleistungen</option>
+                        <option value="33">Bildungseinrichtungen  &amp; au&#223;eruniversit&#228;re Forschungseinrichtungen</option>
+                        <option value="36">Chemische- / Pharmazeutische Industrie</option>
+                        <option value="3">Chemische Industrie</option>
+                        <option value="37">Elektrotechnik und Elektronikindustrie</option>
+                        <option value="5">Energieversorgung (andere)</option>
+                        <option value="52">Energieversorgung (Erneuerbare Energien)</option>
+                        <option value="38">Entsorgungswirtschaft, Kreislaufwirtschaft</option>
+                        <option value="39">Ern&#228;hrungswirtschaft</option>
+                        <option value="40">Grundstoffwirtschaft</option>
+                        <option value="4">Handel</option>
+                        <option value="42">Handwerk</option>
+                        <option value="54">Hochschule</option>
+                        <option value="16">Information und Kommunikation</option>
+                        <option value="9">Konsumg&#252;terindustrie</option>
+                        <option value="43">Maschinenbau</option>
+                        <option value="51">Medien- und Informationsdienstleister</option>
+                        <option value="14">sonstige</option>
+                        <option value="10">sonstige Dienstleistungen</option>
+                        <option value="44">Textil- und Bekleidungsindustrie</option>
+                        <option value="47">Tourismus; Hotel- und Gastgewerbe</option>
+                        <option value="32">Transport, Logistik, Verkehrswirtschaft</option>
+                        <option value="49">Veranstaltungs- und Messewirtschaft</option>
+                        <option value="29">Wasserwirtschaft</option>
+                        <option value="45">Wohnungs- und Immobilienwirtschaft</option>
+
+        </select>
+
+
+        <br />
+
+        <span class="filterTitles">Unternehmenstyp</span>
+        <select class="drpDwnFilter" id="drpCompanyTypeFilter">
+            <option value="-1">Alle</option>
+                        <option value="1">Aktiengesellschaft</option>
+                        <option value="18">A&#246;R</option>
+                        <option value="16">GbR</option>
+                        <option value="5">Genossenschaft</option>
+                        <option value="10">GmbH</option>
+                        <option value="8">Kommanditgesellschaft</option>
+                        <option value="6">Sonstige</option>
+                        <option value="12">Stiftung</option>
+                        <option value="14">Verein</option>
+
+        </select>
+
+
+
+        <br />
+
+        <span class="filterTitles">B&#246;rsennotierung</span>
+        <select class="drpDwnFilter" id="drpIsListedFilter">
+            <option value="-1">Alle</option>
+            <option value="0">Nein</option>
+            <option value="1">Ja</option>
+        </select>
+        <br />
+
+
+        <span class="filterTitles">Pr&#252;fung durch Dritte</span>
+        <select class="drpDwnFilter" id="drpIsAssuranceFilter">
+            <option value="-1">Alle</option>
+            <option value="0">Nein</option>
+            <option value="1">Ja</option>
+        </select>
+        <br />
+
+
+
+        <span class="filterTitles">Sprache</span>
+        <select class="drpDwnFilter" id="drpLanguage">
+            <option value="-1">Alle</option>
+            <option value="1">Deutsch</option>
+            <option value="2">Englisch</option>
+        </select>
+
+
+        <br />
+
+        <span class="filterTitles">Berichtsjahr</span>
+        <select class="drpDwnFilter" id="drpYears">
+            <option value="-1">Alle</option>
+                    <option value="2010">2010</option>
+                    <option value="2011">2011</option>
+                    <option value="2012">2012</option>
+                    <option value="2013">2013</option>
+                    <option value="2014">2014</option>
+                    <option value="2015">2015</option>
+                    <option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+
+        </select>
+
+        <br />
+
+        <span class="filterTitles">Berichtspflicht</span>
+        <select class="drpDwnFilter" id="drpDeclaration">
+            <option value="-1">Alle</option>
+            <option value="0">Ja und Erkl&#228;rung iSd CSR-Berichtspflicht pr&#252;fen </option>
+            <option value="4">Ja, aber Erkl&#228;rung nicht iSd CSR-Berichtspflicht pr&#252;fen </option>
+            <option value="1">Nein </option>
+            <option value="2">Nein, aber Erkl&#228;rung im Sinne der CSR-Berichtspflicht pr&#252;fen </option>
+            <option value="3">Keine Angaben </option>
+
+        </select>
+
+        <br />
+
+        <span class="filterTitles">Schulungspartner</span>
+        <select class="drpDwnFilter" id="drp_AdminPartner">
+            <option value="-1">Alle</option>
+            <option value="0">Kein Partner / Mentor</option>
+            <option value="1">Ist Schulungspartner</option>
+            <option value="2">Ist Mentor</option>
+        </select>
+
+
+
+
+
+
+        <br /><br />
+
+        <span class="filterTitles">
+            Volltextsuche <span class="glasses" title="Ihr Suchergebnis finden Sie hier..."></span>
+        </span>
+        <input name="Fulltext" id="Fulltext" type="text" class="textBox">
+
+
+
+        <input type="button" id="inputBtn_filter" class="btnFilter" value="Filter" />
+    </div>
+
+</div>
+
+
+        <br />
+
+        <span class="alphaBet">
+
+            <a href="#" id="lnk_All" class="linkBtn_sortByChar active">Neueste</a>
+            <a href="#" id="lnk_Char" class="linkBtn_sortByChar">#</a>
+                    <a href="#" class="linkBtn_sortByChar">a</a>
+                    <a href="#" class="linkBtn_sortByChar">b</a>
+                    <a href="#" class="linkBtn_sortByChar">c</a>
+                    <a href="#" class="linkBtn_sortByChar">d</a>
+                    <a href="#" class="linkBtn_sortByChar">e</a>
+                    <a href="#" class="linkBtn_sortByChar">f</a>
+                    <a href="#" class="linkBtn_sortByChar">g</a>
+                    <a href="#" class="linkBtn_sortByChar">h</a>
+                    <a href="#" class="linkBtn_sortByChar">i</a>
+                    <a href="#" class="linkBtn_sortByChar">j</a>
+                    <a href="#" class="linkBtn_sortByChar">k</a>
+                    <a href="#" class="linkBtn_sortByChar">l</a>
+                    <a href="#" class="linkBtn_sortByChar">m</a>
+                    <a href="#" class="linkBtn_sortByChar">n</a>
+                    <a href="#" class="linkBtn_sortByChar">o</a>
+                    <a href="#" class="linkBtn_sortByChar">p</a>
+                    <a href="#" class="linkBtn_sortByChar">q</a>
+                    <a href="#" class="linkBtn_sortByChar">r</a>
+                    <a href="#" class="linkBtn_sortByChar">s</a>
+                    <a href="#" class="linkBtn_sortByChar">t</a>
+                    <a href="#" class="linkBtn_sortByChar">u</a>
+                    <a href="#" class="linkBtn_sortByChar">v</a>
+                    <a href="#" class="linkBtn_sortByChar">w</a>
+                    <a href="#" class="linkBtn_sortByChar">x</a>
+                    <a href="#" class="linkBtn_sortByChar">y</a>
+                    <a href="#" class="linkBtn_sortByChar">z</a>
+
+        </span>
+
+
+        <div class="companySearchOptions">
+            <table cellpadding="0" cellspacing="0">
+                <tr>
+
+
+                    <td>
+                        <div class="companyCounter normalCounter" data-info="0"><span id="companyCounterNumber"></span> Unternehmen (von <span id="completeCounter"></span>)</div>
+                    </td>
+
+
+                </tr>
+
+
+            </table>
+        </div>
+
+
 
 
         <div id="tblCompanyListing"><div id='accordion'><div class='companyContainer comp_:'><h3 class='companyLink even' data-id='11048' data-date='29.01.2018 14:54:00'><span class='cEditName'>:response</span><span id='arrow_11048' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_11048'></div></div><div class='companyContainer comp_2'><h3 class='companyLink odd' data-id='13319' data-date='23.02.2018 11:12:00'><span class='cEditName'>2bdifferent</span><span id='arrow_13319' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_13319'></div></div><div class='companyContainer comp_2'><h3 class='companyLink even' data-id='12063' data-date=''><span class='cEditName'>2b-Enabled Consult</span><span id='arrow_12063' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_12063'></div></div><div class='companyContainer comp_3'><h3 class='companyLink odd' data-id='8844' data-date='13.06.2018 16:32:00'><span class='cEditName'>360report</span><span id='arrow_8844' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_8844'></div></div><div class='companyContainer comp_5'><h3 class='companyLink even' data-id='12172' data-date='28.04.2017 08:00:00'><span class='cEditName'>50Hertz Transmission GmbH</span><span id='arrow_12172' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_12172'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='9030' data-date='30.05.2018 17:58:00'><span class='cEditName'>Aareal Bank AG</span><span id='arrow_9030' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_9030'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='13779' data-date='16.12.2019 15:00:00'><span class='cEditName'>ABCERT AG</span><span id='arrow_13779' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_13779'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='13706' data-date='20.01.2020 10:19:00'><span class='cEditName'>Abfallwirtschaft und Stadtreinigung Freiburg GmbH</span><span id='arrow_13706' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_13706'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='7544' data-date='24.11.2016 15:45:00'><span class='cEditName'>Abfallwirtschaftsbetrieb München</span><span id='arrow_7544' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_7544'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='7673' data-date='04.05.2017 15:30:00'><span class='cEditName'>AfB gemeinnützige GmbH</span><span id='arrow_7673' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_7673'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='13636' data-date='20.05.2019 10:38:00'><span class='cEditName'>Agentur für nachhaltige Kommunikation</span><span id='arrow_13636' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_13636'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='12134' data-date='22.06.2017 10:18:00'><span class='cEditName'>AGIMUS GmbH Umweltgutachterorganisation & Beratungsgesellschaft</span><span id='arrow_12134' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_12134'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='13581' data-date='02.12.2019 11:11:00'><span class='cEditName'>agn Niederberghaus & Partner GmbH</span><span id='arrow_13581' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_13581'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='13556' data-date='26.02.2019 18:50:00'><span class='cEditName'>ALDI Einkauf GmbH & Co. oHG</span><span id='arrow_13556' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_13556'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='12238' data-date='20.11.2017 13:17:00'><span class='cEditName'>ALEA GmbH</span><span id='arrow_12238' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_12238'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='620' data-date='01.10.2019 17:08:00'><span class='cEditName'>Allianz SE</span><span id='arrow_620' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_620'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='13494' data-date='30.04.2019 12:04:00'><span class='cEditName'>Alpensped GmbH, Internationale Logistik</span><span id='arrow_13494' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_13494'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='8734' data-date='14.11.2019 15:21:00'><span class='cEditName'>Alpha IC GmbH</span><span id='arrow_8734' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_8734'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='7857' data-date='16.02.2017 13:39:00'><span class='cEditName'>alstria office REIT-AG</span><span id='arrow_7857' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_7857'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='12275' data-date='20.03.2020 10:29:00'><span class='cEditName'>ALTE LEIPZIGER Lebensversicherung auf Gegenseitigkeit</span><span id='arrow_12275' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_12275'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='13683' data-date='26.06.2019 13:14:00'><span class='cEditName'>Angerstein Elektro | Sanitär | Heiztechnik</span><span id='arrow_13683' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_13683'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='13707' data-date='07.10.2019 11:38:00'><span class='cEditName'>Anhalt Logistics GmbH & Co. KG</span><span id='arrow_13707' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_13707'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='12214' data-date='29.11.2017 09:59:00'><span class='cEditName'>Anker's Hörn / Hilligenley</span><span id='arrow_12214' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_12214'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='13336' data-date='09.02.2018 14:01:00'><span class='cEditName'>ARGE Trifolium - Schleich-Sustainability-Solutions</span><span id='arrow_13336' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_13336'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='13338' data-date='22.05.2018 11:25:00'><span class='cEditName'>Arqum GmbH</span><span id='arrow_13338' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_13338'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='13592' data-date='03.02.2020 09:40:00'><span class='cEditName'>ASSMANN BÜROMÖBEL GmbH & Co. KG</span><span id='arrow_13592' class='arrow'></span></h3><div class='berichteContainer odd' id='berichte_13592'></div></div><div class='companyContainer comp_a'><h3 class='companyLink even' data-id='5373' data-date='18.05.2017 08:00:00'><span class='cEditName'>AUDI AG</span><span id='arrow_5373' class='arrow'></span></h3><div class='berichteContainer even' id='berichte_5373'></div></div><div class='companyContainer comp_a'><h3 class='companyLink odd' data-id='13473' data-date='14.05.2018 14:38:00'><span class='cEditName'>AVG Abfallentsorgungs- und Verwertungsgesellschaft Köln mbH
@@ -50,98 +534,61 @@ Schleibrücken Immobilien GmbH</span><span id='arrow_12242' class='arrow'></span
 
 
 
-"""
 
 
-def parse_company_zeil(dir):
-    files_lst = glob.glob(dir)
-    for i in files_lst:
-        print(f"file list {i}")
-        with open(i) as file:
-            txt = contents = file.read()
-            m = matcher_id_year.findall(txt)
-            if m:
-                print(m)
-                for p in m:
-                    company = p[0]
-                    year = p[1]
-                    ziel_url = f"https://datenbank2.deutscher-nachhaltigkeitskodex.de/Profile/MainMenuHandler/2_3?company={company}&year={year}&lang=de&culture=de"
-                    print(f"downloading {ziel_url}")
-                    text = download(ziel_url, astext=True)
-                    filename = f"/home/avare/repos/givetastic_recommender/data/company_profile_ndb/ziel_OLD/{company}_{year}.txt"
-                    save(text, filename)
-                    time.sleep(5)
+        <br /><br />
 
 
 
-# def parse_strategy(dir):
-#     files_lst = glob.glob(dir)
-#     for i in files_lst:
-#         ziel_text = read_file_contents(i)
-#         print(ziel_text)
-#         save(ziel_text, company):
-#         #  store to file
+    </div>
+<br /><br />
 
-def parse_company_zeil_OLD(dir):
-    files_lst = glob.glob(dir)
-    for i in files_lst:
-        print(f"file list {i}")
-        with open(i) as file:
-            txt = contents = file.read()
-            m = matcher_id_year.findall(txt)
-            if m:
-                print(m)
-                for p in m:
-                    company = p[0]
-                    year = p[1]
-                    ziel_url = f"https://datenbank2.deutscher-nachhaltigkeitskodex.de/Profile/MainMenuHandler/2_3?company={company}&year={year}&lang=de&culture=de"
-                    print(f"downloading {ziel_url}")
-                    text = download(ziel_url, astext=True)
-                    filename = f"/home/avare/repos/givetastic_recommender/data/company_profile_ndb/ziel_OLD/{company}_{year}.txt"
-                    save(text, filename)
-                    time.sleep(5)
+<script src="/Scripts/_Standard/jquery-3.4.1.min.js"></script>
+
+<script src="/Scripts/_Standard/jquery-ui.min.js"></script>
+
+<script src="/Scripts/_Standard/jquery.unobtrusive-ajax.js"></script>
+<script src="/Scripts/_Standard/jquery.validate.js"></script>
+<script src="/Scripts/_Standard/jquery.validate.unobtrusive.js"></script>
+
+<script src="/Scripts/_DNK_Script/DNK_GlobalScript_v2.min.js"></script>
+<script src="/Scripts/_DNK_Script/DNK_DatabaseScript_v3.min.js"></script>
+<script src="/Scripts/_DNK_Script/DNK_Database_Parts/DNK_Database_AdminOptions.min.js"></script>
+<script src="/Scripts/_DNK_Script/DNK_Database_Parts/DNK_Database_Filtering.min.js"></script>
+<script src="/Scripts/_Plugins/datatables/datatables.min.js"></script>
+<script src="/Scripts/_Plugins/datatables/Buttons-1.5.2/js/buttons.colVis.min.js"></script>
+<script src="/Scripts/_Plugins/datatables/moment.min.js"></script>
+<script src="/Scripts/_Plugins/datatables/datetime-moment.js"></script>
+<script src="/Scripts/_Plugins/tinymce/tinymce.min.js"></script>
+<script src="/Scripts/_Plugins/timePicker/src/clockpicker.js"></script>
 
 
-def read_file_contents(filename):
-    with open(filename) as file:
-        txt = contents = file.read()
-        return txt
-
-def save(text, filename):
-    print(filename)
-    try:
-        with open(filename, "w") as file:
-            file.write(text)
-    except Exception as e:
-        print("Exception: skipping " + filename)
 
 
-def download(url, astext=False):
-    try:
-        response = requests.get(url, headers=const.headers) #  send request
-        if response.status_code == 200:
-            #print(response.status_code, 'OK')
-            pass
-    except requests.exceptions.ConnectionError:
-        print('Something wrong ')
-        return False
-    soup = BeautifulSoup(response.text, "lxml")  #  parse web page
-    html = soup.prettify("utf-8")
-    if astext:
-        html = soup.text
-    return html
 
-if __name__ == "__main__":
+        <!-- Piwik -->
+        <script type="text/javascript">
+          var _paq = _paq || [];
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function() {
+              var u = "https://piwik.com-online.com/";
+            _paq.push(['setTrackerUrl', u+'piwik.php']);
+            _paq.push(['setSiteId', 151]);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+          })();
 
-    ##############
-    ## Step 2 :
-    ##############
-    parse_company_zeil(const.alphabet_path)
 
-    #NEXT:
-    # get name and - id pairs from /de.html file
-    # <span class="cEditName">Frischpack GmbH</span><span id="arrow_10032" class="arrow">
-    # view frame source to bind name etc
-    #'view-source:file:///home/avare/repos/givetastic_recommender/data/raw/alphabet_listing/Deutscher%20Nachhaltigkeitskodex%20-%20Datenbank_S_files/de.html'
-    #'/home/avare/repos/givetastic_recommender/data/raw/alphabet_listing/Deutscher Nachhaltigkeitskodex - Datenbank_C.html'
+
+
+        </script>
+        <noscript><p><img src="https://piwik.com-online.com/piwik.php?idsite=151&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+        <!-- End Piwik Code -->
+
+
+
+    </body>
+</html>
+
 

@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup
 from random import randint
 from time import sleep
 import  constants as const
+import jsonlines
 
 
 mathcher_name_id = re.compile(r"span class='cEditName'>(.*?)<\/span><span\s*id='arrow_(.*?)'", re.MULTILINE)
@@ -38,12 +39,25 @@ def load_id_date_mapping():
 
                 if len(year) > 0:
                     year = int(sp[1].strip()) + 2000
-                    print(year)
+                    #print(year)
                     ziel_url = f"https://datenbank2.deutscher-nachhaltigkeitskodex.de/Profile/MainMenuHandler/2_3?company={company_id}&year={year}&lang=de&culture=de"
                     profile_meta[company_id] = {'ziel_url':ziel_url, 'name':name, 'year':year}
+                    ## todo create jsonl dump as you go...
+                    print(ziel_url)
 
-    print(profile_meta)
+    #print(profile_meta)
 
+
+def dump_jsonl(data, output_path, append=False):
+    """
+    Write list of objects to a JSON lines file.
+    """
+    mode = 'a+' if append else 'w'
+    with open(output_path, mode, encoding='utf-8') as f:
+        for line in data:
+            json_record = json.dumps(line, ensure_ascii=False)
+            f.write(json_record + '\n')
+    print('Wrote {} records to {}'.format(len(data), output_path))
 
 
 def get_profile_url():
@@ -58,13 +72,6 @@ def get_profile_url():
 
             # construct profile_url
 
-
-
-
-def read_file_contents(filename):
-    with open(filename) as file:
-        txt = contents = file.read()
-        return txt
 
 def save(text, filename):
     print(filename)

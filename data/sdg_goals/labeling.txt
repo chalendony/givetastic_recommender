@@ -26,7 +26,8 @@ Goal 13: Climate action: "Take urgent action to combat climate change and its im
 
 Goal 14: Life below water: "Conserve and sustainably use the oceans, seas and marine resources for sustainable development.
 
-Goal 15: Life on land: "Protect, restore and promote sustainable use of terrestrial ecosystems, sustainably manage forests, combat desertification, and halt and reverse land degradation and halt biodiversity loss."
+Goal 15: Life on land: "Protect, restore and promote sustainable use of terrestrial ecosystems, sustainably manage forests, combat desertification,
+and halt and reverse land degradation and halt biodiversity loss."
 
 Goal 16: Peace, justice and strong institutions: "Promote peaceful and inclusive societies for sustainable development, provide access to justice for all and build effective, accountable and inclusive institutions at all levels."
 

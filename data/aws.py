@@ -15,8 +15,6 @@ REGION=os.getenv('REGION')
 DBNAME=os.getenv('DBNAME')
 PASSWD = os.getenv('PASSWD')
 
-conn = None
-cur = None
 
 schema = """
 CREATE TABLE `test_label_sdg_campaign` (
@@ -36,6 +34,16 @@ CREATE TABLE `test_label_sdg_campaign` (
 
 
 """
+
+
+conn = None
+cur = None
+try:
+    conn = mysql.connector.connect(host=ENDPOINT, user=USR, passwd=PASSWD, port=PORT, database=DBNAME)
+    cur = conn.cursor()
+except Exception as e:
+    print("Database connection failed due to {}".format(e))
+
 
 def connect_aws():
     try:
@@ -64,7 +72,7 @@ def get_aws_connection():
 def get_labels():
     try:
         query = """
-        SELECT * FROM testing.test_label_sdg_campaign
+        SELECT * FROM testing.test_raw_goal_project
         """
         df = pd.read_sql(query, con=conn)
     except Exception as e:
@@ -145,10 +153,43 @@ def get_projects(user_id):
 
     return df
 
+def close_database_connections():
+    # todo use with
+    conn.close()
 
 
 
+def get_user_goal():
+    try:
+        query = "SELECT  * from test_user_image tui ;"
 
+        df = pd.read_sql(query, con=conn)
+    except Exception as e:
+        print("Database connection failed due to {}".format(e))
+
+    return df
+
+
+def get_image_goal():
+    try:
+        query = "SELECT * from testing.test_image_goal;"
+
+        df = pd.read_sql(query, con=conn)
+    except Exception as e:
+        print("Database connection failed due to {}".format(e))
+
+    return df
+
+
+def get_goal_project():
+    try:
+        query = "SELECT * from testing.test_goal_project;"
+
+        df = pd.read_sql(query, con=conn)
+    except Exception as e:
+        print("Database connection failed due to {}".format(e))
+
+    return df
 
 if __name__ == "__main__":
     print("aws database test")

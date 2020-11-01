@@ -106,11 +106,16 @@ def insert_raw_labels(dat):
 
 
 def normalize_labels():
+    """
+    #normalize_labels()
+
+    :return:
+    """
+
     goals = ['SDG_1', 'SDG_2', 'SDG_3']
+    weight = {'SDG_1': 4 / 7, 'SDG_2': 2 / 7, 'SDG_3': 1 / 7}
     cur_A = conn.cursor(buffered=True)
     cur_B = conn.cursor(buffered=True)
-
-    weight = 1.0
 
     query_insert = (
         "INSERT INTO testing.test_goal_project () "
@@ -121,7 +126,7 @@ def normalize_labels():
         print(query_select)
         cur_A.execute(query_select)
         for (PROJECT_ID, goal) in cur_A:
-            cur_B.execute(query_insert, (PROJECT_ID, goal, weight))
+            cur_B.execute(query_insert, (PROJECT_ID, goal, weight[g]))
             conn.commit()
 
 
@@ -142,10 +147,10 @@ def init_demo_labels(file):
 
 
 def get_projects(user_id):
-    query = f"select NGO_NAME , PROJECT_TITLE from test_raw_goal_project where project_id in " \
-            f"(select project_id  from test_goal_project tgp where goal in " \
-            f"(select goal from test_image_goal tig where image_id IN " \
-            f"(select image  from test_user_image tui where user_id = {user_id})));"
+    query = f"select distinct NGO_NAME , PROJECT_TITLE  from test_raw_goal_project where project_id in " \
+            f"(select project_id  from test_goal_project tui where goal in " \
+            f"(select goal from test_image_goal  where image_id IN " \
+            f"(select image  from test_user_image  where user_id = {user_id}))order by weight desc) limit 20;"
     try:
         df = pd.read_sql(query, con=conn)
     except Exception as e:
@@ -194,10 +199,9 @@ def get_goal_project():
 if __name__ == "__main__":
     print("aws database test")
     get_aws_connection()
+
     df = get_projects(1)
     print(df)
-    #normalize_labels()
-
 
     conn.close()
 

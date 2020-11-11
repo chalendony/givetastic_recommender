@@ -150,7 +150,7 @@ def get_projects(user_id):
     query = f"select distinct NGO_NAME , PROJECT_TITLE  from test_raw_goal_project where project_id in " \
             f"(select project_id  from test_goal_project tui where goal in " \
             f"(select goal from test_image_goal  where image_id IN " \
-            f"(select image  from test_user_image  where user_id = {user_id}))order by weight desc) limit 20;"
+            f"(select image  from test_user_image  where user_id = {user_id})) order by RAND()) limit 20;"
     try:
         df = pd.read_sql(query, con=conn)
     except Exception as e:
